@@ -1,0 +1,3 @@
+package inversions
+
+object Inversions

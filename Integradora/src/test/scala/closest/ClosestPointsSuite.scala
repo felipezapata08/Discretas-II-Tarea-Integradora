@@ -1,0 +1,3 @@
+package closest
+
+class ClosestPointsSuite
