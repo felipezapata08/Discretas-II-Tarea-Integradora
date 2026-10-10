@@ -13,6 +13,17 @@ object Inversions {
    */
   def merge(left: List[Int], right: List[Int]): (List[Int], Long) = {
 
+    /**
+     * Walks both sorted lists, moves one element per call to acc and counts
+     * the cross inversions.
+     *
+     * @param leftList  elements of the left list that are still not merged
+     * @param rightList elements of the right list that are still not merged
+     * @param leftSize  how many elements are left in leftList
+     * @param acc       merged elements so far, in reverse order
+     * @param count     cross inversions found so far
+     * @return the merged sorted list and the number of cross inversions
+     */
     @tailrec
     def loop(
               leftList: List[Int],
