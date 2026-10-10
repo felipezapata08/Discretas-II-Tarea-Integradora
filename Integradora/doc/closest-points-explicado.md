@@ -20,7 +20,7 @@ Este documento junta en un solo lugar todo lo del Problema 3: cómo funciona el 
 
 ## 1. ¿Qué problema estamos resolviendo?
 
-Nos dan una lista de puntos en un plano, cada uno como una lista de dos enteros `[x, y]`, y tenemos que encontrar **la distancia más pequeña entre cualquier par de puntos distintos**.
+Nos dan una lista de puntos en un plano, cada uno como una lista de dos enteros **[x, y]**, y tenemos que encontrar la distancia más pequeña entre cualquier par de puntos distintos.
 
 Ejemplos del enunciado:
 
@@ -49,12 +49,12 @@ Imagina que los puntos son casas en un pueblo.
 
 1. **Ordenamos las casas de izquierda a derecha** (por la coordenada x).
 2. **Trazamos una calle imaginaria justo en el medio** y dividimos el pueblo en dos barrios: el de la izquierda y el de la derecha.
-3. **Le preguntamos a cada barrio** (con la misma receta, otra vez): "¿cuál es el par de casas más cercanas que tienes?". Los dos barrios responden con una distancia, llamémoslas `d1` y `d2`.
-4. Nos quedamos con la menor de las dos. A esa la llamamos **delta** (`δ`). Ya sabemos que el par más cercano del pueblo **no puede ser peor que delta**.
+3. **Le preguntamos a cada barrio** (con la misma receta, otra vez): "¿cuál es el par de casas más cercanas que tienes?". Los dos barrios responden con una distancia, llamémoslas **d1** y **d2**.
+4. Nos quedamos con la menor de las dos. A esa la llamamos **delta** (**δ**). Ya sabemos que el par más cercano del pueblo **no puede ser peor que delta**.
 5. Pero ojo: **falta un caso**. Puede haber dos casas muy cerquita **una a cada lado de la calle**. Ningún barrio pudo verlas juntas, porque cada una vive en un barrio distinto.
 6. Para revisar eso no hace falta mirar todo el pueblo. Solo importan las casas que están **a menos de delta de la calle del medio**. Esa es **la franja**.
 7. Ordenamos las casas de la franja **de abajo hacia arriba** (por la coordenada y) y las recorremos comparando cada una con unas pocas siguientes.
-8. La respuesta final es la menor entre `delta` y lo que encontramos en la franja.
+8. La respuesta final es la menor entre **delta** y lo que encontramos en la franja.
 
 ¿Por qué sirve la franja? Si dos casas, una de cada lado, están a distancia **menor que delta**, entonces cada una está a menos de delta de la calle. Si estuvieran más lejos, ya estarían a distancia mayor o igual que delta y no mejorarían nada. Por eso las casas fuera de la franja se pueden ignorar con tranquilidad.
 
@@ -102,7 +102,7 @@ Antes del algoritmo grande hay unas funciones pequeñas que se usan por todos la
 
 ### 4.1 El truco del acumulador y `@tailrec`
 
-Varias funciones tienen un parámetro llamado `accumulator` (acumulador). Es como una **libreta** donde se va anotando el resultado parcial mientras se avanza por la lista. Al final se devuelve lo anotado.
+Varias funciones tienen un parámetro llamado `accumulator`. Es como una **libreta** donde se va anotando el resultado parcial mientras se avanza por la lista. Al final se devuelve lo anotado.
 
 Esto permite la **recursión de cola**: la llamada recursiva es lo último que hace la función, así que Scala la convierte internamente en un ciclo y no se acumulan llamadas pendientes. Por eso llevan la etiqueta `@tailrec`.
 
@@ -124,7 +124,7 @@ lengthTR([A, B, C], 0)
 
 ### 4.3 `reverseTR`: dar la vuelta
 
-Va pasando elementos de una lista a la libreta. Como cada elemento nuevo se pone **al frente**, el orden queda invertido.
+Va pasando elementos de una lista a la libreta. Como cada elemento nuevo se pone al frente, el orden queda invertido.
 
 ```
 reverseTR([A, B, C], [])
@@ -142,7 +142,7 @@ reverseTR(xs, acc) = (xs al revés) ++ acc
 
 ### 4.4 `splitPoints`: partir en dos
 
-Calcula `mitad = largo / 2` (división entera) y pasa los primeros `mitad` elementos a la izquierda; el resto va a la derecha.
+Calcula mitad = largo / 2 (división entera) y pasa los primeros mitad elementos a la izquierda; el resto va a la derecha.
 
 ```
 splitPoints([A, B, C, D, E])     largo 5, mitad 2
@@ -150,25 +150,22 @@ splitPoints([A, B, C, D, E])     largo 5, mitad 2
 → derecha:   [C, D, E]
 ```
 
-Fíjate en que **si hay un número impar, la derecha se queda con uno más**. Y cuando la lista tiene al menos 2 elementos, las dos mitades nunca quedan vacías y siempre son más cortas que la original. Eso es lo que asegura que la recursión termine.
+si hay un número impar, la derecha se queda con uno más. Y cuando la lista tiene al menos 2 elementos, las dos mitades nunca quedan vacías y siempre son más cortas que la original. Eso es lo que asegura que la recursión termine.
 
 ---
 
 ## 5. Ordenar con Merge Sort
 
-Necesitamos ordenar por x (al inicio) y por y (la franja). Se hace con **Merge Sort**, que es divide y vencerás en pequeño:
+Necesitamos ordenar por x (al inicio) y por y (la franja).
 
 1. Si la lista tiene 0 o 1 elementos, ya está ordenada.
-2. Si no, se parte en dos con `splitPoints`.
-3. Se ordena cada mitad (llamada recursiva).
-4. Se **mezclan** las dos mitades ya ordenadas con `merge`.
+2. Si no, se parte en dos con splitPoints.
+3. Se ordena cada mitad.
+4. Se mezclan las dos mitades ya ordenadas con merge.
 
 ### 5.1 El merge, paso a paso
 
-Mezclar dos listas ordenadas es como juntar dos filas de gente ordenadas por estatura: miras a la primera persona de cada fila y dejas pasar a la más baja. Repites hasta que una fila se acabe, y entonces pasa toda la otra.
-
-En el código se usa una libreta (`accumulator`) donde van quedando los que ya pasaron. **Ojo, la libreta queda al revés**, porque cada elemento nuevo se pone al frente. Por eso al final hay que darle la vuelta.
-
+Mezclar dos listas ordenadas es como juntar dos filas de gente ordenadas por estatura: miras a la primera persona de cada fila y dejas pasar a la más baja. Repites hasta que una fila se acabe, y entonces pasa toda la otra.En el código se usa una libreta (accumulator) donde van quedando los que ya pasaron.
 Ejemplo mezclando por x estas dos listas ya ordenadas:
 
 - Izquierda: `(1,8), (5,2)`
@@ -224,7 +221,7 @@ sortByX([(5,2), (1,8), (3,4), (2,7)])
 
 ## 6. El algoritmo principal paso a paso
 
-### 6.1 `closestPoints`: la puerta de entrada
+### 6.1 closestPoints: la puerta de entrada
 
 ```scala
 def closestPoints(points) =
@@ -236,9 +233,9 @@ def closestPoints(points) =
 
 El redondeo es `round(resultado * 10000) / 10000`. El caso "infinito" aparece cuando hay menos de dos puntos (no existe ningún par).
 
-### 6.2 `closestRecursive`: el corazón
+### 6.2 closestRecursive: el corazón
 
-Recibe los puntos **ya ordenados por x** y responde distinto según cuántos puntos haya:
+Recibe los puntos ya ordenados por x y responde distinto según cuántos puntos haya:
 
 | Cuántos puntos | Qué devuelve | Por qué |
 |---|---|---|
@@ -248,42 +245,40 @@ Recibe los puntos **ya ordenados por x** y responde distinto según cuántos pun
 
 El procedimiento para 3 o más puntos:
 
-**Paso 1. Dividir.** `splitPoints` parte la lista en izquierda y derecha.
+**Paso 1. Dividir.** splitPoints parte la lista en izquierda y derecha.
 
-**Paso 2. Resolver cada mitad.** Se llama a `closestRecursive` con la izquierda y con la derecha. Estas son las **dos llamadas recursivas**. Cada una trabaja con una lista más corta, hasta llegar a los casos de 0, 1 o 2 puntos.
+**Paso 2. Resolver cada mitad.** Se llama a closestRecursive con la izquierda y con la derecha. Estas son las **dos llamadas recursivas**. Cada una trabaja con una lista más corta, hasta llegar a los casos de 0, 1 o 2 puntos.
 
-**Paso 3. Sacar delta.** `delta = el menor entre leftDistance y rightDistance`.
+**Paso 3. Sacar delta.** delta = el menor entre leftDistance y rightDistance.
 
-**Paso 4. Armar la franja.** `buildStrip` mira el primer punto de la mitad derecha, toma su x como "la calle del medio" y se queda con **todos** los puntos de la lista cuya x esté a una distancia de la calle menor o igual a delta. Luego ordena esa franja por y.
+**Paso 4. Armar la franja.** buildStrip mira el primer punto de la mitad derecha, toma su x como "la calle del medio" y se queda con todos los puntos de la lista cuya x esté a una distancia de la calle menor o igual a delta. Luego ordena esa franja por y.
 
-**Paso 5. Recorrer la franja.** `stripMinDistance` busca la distancia mínima ahí dentro.
+**Paso 5. Recorrer la franja.** stripMinDistance busca la distancia mínima ahí dentro.
 
-**Paso 6. Responder.** Se devuelve el menor entre `delta` y la distancia de la franja.
+**Paso 6. Responder.** Se devuelve el menor entre delta y la distancia de la franja.
 
 ### 6.3 `buildStrip`: la franja
 
-Recorre todos los puntos con una función interna de cola. Para cada punto calcula `|x - calleDelMedio|`:
+Recorre todos los puntos con una función interna de cola. Para cada punto calcula |x - calleDelMedio|:
 
 - Si es **menor o igual a delta**, el punto entra a la franja.
 - Si no, se descarta.
 
-Al terminar, la lista de la franja está al revés (por la libreta), así que se invierte con `reverseTR`, y después se ordena por y con `sortByY`.
-
-Detalle: se usa `<=` (menor **o igual**) y no `<`. Así no se pierde un punto que esté justo en el borde de la franja.
+Al terminar, la lista de la franja está al revés (por la libreta), así que se invierte con reverseTR, y después se ordena por y con sortByY.
 
 ### 6.4 `stripMinDistance`: recorrer la franja sin comparar todo con todo
 
 Esto es lo que evita volver a un algoritmo lento. Hay dos funciones internas:
 
-**`scan`** va punto por punto: toma el primero de la lista y lo compara con los que vienen después, y luego sigue con el segundo, y así.
+**scan** va punto por punto: toma el primero de la lista y lo compara con los que vienen después, y luego sigue con el segundo, y así.
 
-**`compareWithFollowing`** compara un punto con los siguientes, **pero se detiene en cuanto la diferencia en y supera la mejor distancia encontrada hasta ahora.**
+**compareWithFollowing** compara un punto con los siguientes, pero se detiene en cuanto la diferencia en y supera la mejor distancia encontrada hasta ahora.
 
-¿Por qué se puede parar? Porque la lista está ordenada por y. Si el siguiente punto ya está a más de `mejor` de altura, su distancia real es **como mínimo** esa altura (la distancia nunca es menor que la diferencia en y). Y todos los que vienen después están todavía más arriba. Ninguno puede mejorar el resultado.
+¿Por qué se puede parar? Porque la lista está ordenada por y. Si el siguiente punto ya está a más de mejor de altura, su distancia real es **como mínimo** esa altura (la distancia nunca es menor que la diferencia en y). Y todos los que vienen después están todavía más arriba. Ninguno puede mejorar el resultado.
 
 Hay otra parada más: si la distancia mínima llega a `0.0` (dos puntos iguales), se corta de una vez, porque menos de cero no se puede.
 
-La libreta de `scan` empieza en infinito, para que la primera comparación real siempre la reemplace.
+La libreta de **scan** empieza en infinito, para que la primera comparación real siempre la reemplace.
 
 Ejemplo, con la franja ordenada por y: `(9,1), (4,3), (5,4), (2,7)` y mejor = infinito:
 
@@ -307,7 +302,7 @@ Punto (2,7): no tiene siguientes.
 
 Entrada: `(0,0), (3,4), (1,1)`
 
-**1) Ordenar por x** con `sortByX`:
+**1) Ordenar por x** con sortByX:
 
 ```
 sortByX([(0,0), (3,4), (1,1)])
@@ -340,9 +335,9 @@ closestRecursive([(0,0), (1,1), (3,4)])
  └── respuesta = menor entre 3.6056 y 1.4142 = 1.4142
 ```
 
-**3) Redondeo:** `1.4142`. ✔ Coincide con el ejemplo del enunciado.
+**3) Redondeo:** `1.4142`. Coincide con el ejemplo del enunciado.
 
-Mira lo que pasó: las dos mitades **no** encontraron la mejor pareja, porque `(0,0)` quedó sola en la izquierda y `(1,1)` en la derecha. La encontró la franja. Por eso la franja es indispensable.
+Mira lo que pasó: las dos mitades no encontraron la mejor pareja, porque (0,0) quedó sola en la izquierda y (1,1) en la derecha. La encontró la franja. Por eso la franja es indispensable.
 
 ---
 
@@ -354,7 +349,7 @@ Entrada (ya ordenada por x para ir directo a lo importante):
 (0,0), (2,7), (4,3), (5,4), (9,1), (10,9)
 ```
 
-La respuesta correcta es `1.4142`, del par `(4,3)` y `(5,4)`. Veamos cómo la encuentra el algoritmo.
+La respuesta correcta es 1.4142, del par (4,3) y (5,4). Veamos cómo la encuentra el algoritmo.
 
 ### El árbol de llamadas
 
@@ -409,7 +404,7 @@ closestRecursive([(0,0), (2,7), (4,3), (5,4), (9,1), (10,9)])      ← llamada A
 │      (5,4) vs (2,7): dif. en y = 3 > 1.4142 → paro
 │      resultado de la franja = 1.4142
 │
-└── respuesta de A = menor entre 4.4721 y 1.4142 = 1.4142   ✔
+└── respuesta de A = menor entre 4.4721 y 1.4142 = 1.4142   
 ```
 
 ### Qué enseña este ejemplo
@@ -429,7 +424,7 @@ Nivel 1: [ 3 puntos ] [ 3 puntos ]
 Nivel 2: [1]  [2 pts]  [1]  [2 pts]      ← aquí las llamadas se paran (casos base)
 ```
 
-Cada vez la lista se parte por la mitad. Con n puntos la profundidad es de unos `log₂ n` niveles (con 1.024 puntos serían 10 niveles). Esto es clave para la complejidad.
+Cada vez la lista se parte por la mitad. Con n puntos la profundidad es de unos **log₂ n** niveles.
 
 ---
 
@@ -445,28 +440,26 @@ Si se cumplen los tres, el algoritmo funciona para cualquier tamaño.En este pro
 
 Antes de probar el algoritmo grande hay que asegurarse de que las piezas pequeñas están bien. Vamos de abajo hacia arriba.
 
-### 9.1 Pieza 1: `reverseTR` hace lo que dice
+### 9.1 Pieza 1: reverseTR hace lo que dice
 
-**Lo que afirmamos:** `reverseTR(xs, acc)` devuelve `(xs al revés) ++ acc`.
+**Lo que afirmamos:** **reverseTR(xs, acc)** devuelve **(xs al revés) ++ acc**.
 
-- **Caso base:** si `xs` está vacía, devuelve `acc`. Y "vacía al revés pegada delante de acc" es justamente `acc`. ✔
+- **Caso base:** si **xs** está vacía, devuelve **acc**. Y "vacía al revés pegada delante de acc" es justamente `acc`. 
 - **Hipótesis:** suponemos que funciona para la lista sin su primer elemento.
-- **Paso:** con `head :: tail`, la función pasa `head` al frente de la libreta y sigue con `tail`. Por la hipótesis eso da `(tail al revés) ++ (head :: acc)`, y eso es lo mismo que `(head :: tail) al revés ++ acc`. ✔
+- **Paso:** con **head :: tail**, la función pasa **head** al frente de la libreta y sigue con **tail**. Por la hipótesis eso da **(tail al revés) ++ (head :: acc), y eso es lo mismo que (head :: tail) al revés ++ acc**. 
 
-### 9.2 Pieza 2: `splitPoints` parte bien
+### 9.2 Pieza 2: splitPoints parte bien
 
-**Lo que afirmamos:** devuelve los primeros `largo/2` elementos a la izquierda y el resto a la derecha, en el mismo orden.
+**Lo que afirmamos:** devuelve los primeros **largo/2** elementos a la izquierda y el resto a la derecha, en el mismo orden.
 
-- **Caso base:** si ya no quedan elementos por pasar, o la lista se acabó, el resultado es el esperado. ✔
-- **Paso:** cada vuelta pasa un elemento a la libreta y baja el contador. Con la propiedad de `reverseTR`, al terminar la izquierda queda en su orden original. ✔
+- **Caso base:** si ya no quedan elementos por pasar, o la lista se acabó, el resultado es el esperado. 
+- **Paso:** cada vuelta pasa un elemento a la libreta y baja el contador. Con la propiedad de **reverseTR**, al terminar la izquierda queda en su orden original. 
 
 Consecuencias que usamos después: si la lista tiene 2 o más elementos, las dos mitades no son vacías y son más cortas. Si tiene 3 o más, **la derecha tiene al menos 2**. Y si la lista estaba ordenada por x, las dos mitades también.
 
 ### 9.3 Pieza 3: el merge mezcla bien
 
-Aquí se prueban dos cosas.
-
-**a) El resultado es una lista ordenada con los mismos elementos.** Si las dos listas de entrada están ordenadas, al tomar siempre el menor de los dos primeros elementos, ese elemento es menor o igual que todos los demás (porque cada lista está ordenada). Se pone al frente y se sigue con lo que queda. Por la hipótesis, lo que queda sale ordenado. ✔
+**a) El resultado es una lista ordenada con los mismos elementos.** Si las dos listas de entrada están ordenadas, al tomar siempre el menor de los dos primeros elementos, ese elemento es menor o igual que todos los demás (porque cada lista está ordenada). Se pone al frente y se sigue con lo que queda. Por la hipótesis, lo que queda sale ordenado. 
 
 **b) La libreta no arruina el orden.** Aquí está la parte delicada. Se demuestra que en cualquier momento se cumple:
 
@@ -474,85 +467,84 @@ Aquí se prueban dos cosas.
 resultado final = (libreta al revés) ++ (lo que falta por mezclar)
 ```
 
-- Caso base: si no queda nada por mezclar, devuelve la libreta al revés. ✔
-- Caso en que una lista se acabó: devuelve `reverseTR(libreta, lo que sobra)`, que por la Pieza 1 es "libreta al revés ++ lo que sobra". ✔
-- Paso: tomar el menor y ponerlo en la libreta mantiene esa igualdad, porque pasar un elemento al frente de la libreta equivale a ponerlo al final de "libreta al revés". ✔
+- Caso base: si no queda nada por mezclar, devuelve la libreta al revés. 
+- Caso en que una lista se acabó: devuelve **reverseTR(libreta, lo que sobra)**, que por la Pieza 1 es "libreta al revés ++ lo que sobra". 
+- Paso: tomar el menor y ponerlo en la libreta mantiene esa igualdad, porque pasar un elemento al frente de la libreta equivale a ponerlo al final de "libreta al revés". 
 
 ### 9.4 Pieza 4: `sortByX` y `sortByY` ordenan bien
 
-- **Caso base:** una lista de 0 o 1 elementos ya está ordenada. ✔
+- **Caso base:** una lista de 0 o 1 elementos ya está ordenada. 
 - **Hipótesis:** suponemos que ordena bien todas las listas más cortas que la actual.
-- **Paso:** se parte en dos mitades más cortas (Pieza 2). Por la hipótesis, cada una sale ordenada. Se mezclan (Pieza 3). Queda ordenada y con los mismos elementos. ✔
+- **Paso:** se parte en dos mitades más cortas (Pieza 2). Por la hipótesis, cada una sale ordenada. Se mezclan (Pieza 3). Queda ordenada y con los mismos elementos. 
 
-Esto implica que `closestPoints` puede ordenar la entrada por x sin perder ni inventar puntos, así que la distancia mínima no cambia.
+Esto implica que **closestPoints** puede ordenar la entrada por x sin perder ni inventar puntos, así que la distancia mínima no cambia.
 
-### 9.5 Pieza 5: `buildStrip` arma la franja correcta
+### 9.5 Pieza 5: **buildStrip** arma la franja correcta
 
-Es un filtro: recorre la lista y se queda con los puntos que cumplen `|x - calle| <= delta`. La libreta se invierte al final (Pieza 1) para conservar el orden, y luego se ordena por y (Pieza 4). ✔
+Es un filtro: recorre la lista y se queda con los puntos que cumplen **|x - calle| <= delta**. La libreta se invierte al final (Pieza 1) para conservar el orden, y luego se ordena por y (Pieza 4). 
 
-### 9.6 Pieza 6: `stripMinDistance` encuentra el mínimo real de la franja
+### 9.6 Pieza 6: **stripMinDistance** encuentra el mínimo real de la franja
 
 Se prueba que **las paradas no se saltan ningún par bueno**:
 
-- **Parada por altura:** si el siguiente punto está más arriba que `mejor`, su distancia es mayor que `mejor`, y los siguientes igual de lejos o más. Ninguno mejora el resultado. ✔
-- **Parada en cero:** las distancias nunca son negativas, así que 0 ya no se puede mejorar. ✔
-- **`scan` + `compareWithFollowing`:** cada par de puntos se compara (o se descarta sin perder nada). Empezar en infinito no molesta, porque cualquier distancia real es menor. ✔
+- **Parada por altura:** si el siguiente punto está más arriba que mejor, su distancia es mayor que mejor, y los siguientes igual de lejos o más. Ninguno mejora el resultado. 
+- **Parada en cero:** las distancias nunca son negativas, así que 0 ya no se puede mejorar. 
+- **scan + compareWithFollowing:** cada par de puntos se compara (o se descarta sin perder nada). Empezar en infinito no molesta, porque cualquier distancia real es menor. 
 
 ### 9.7 La pieza grande: `closestRecursive` da la distancia mínima
 
-**Lo que afirmamos:** si los puntos vienen ordenados por x, `closestRecursive` devuelve la distancia mínima entre dos puntos distintos de la lista.
+**Lo que afirmamos:** si los puntos vienen ordenados por x, **closestRecursive** devuelve la distancia mínima entre dos puntos distintos de la lista.
 
 **Casos base**
 
-- Con **0 o 1 punto**: no hay pares, devuelve infinito. Es lo correcto: "no existe distancia". ✔
-- Con **2 puntos**: hay un solo par, y devuelve su distancia. ✔
+- Con **0 o 1 punto**: no hay pares, devuelve infinito. Es lo correcto: "no existe distancia". 
+- Con **2 puntos**: hay un solo par, y devuelve su distancia. 
 
 **Hipótesis inductiva**
 
-Suponemos que `closestRecursive` ya funciona bien para **cualquier lista más corta** que la actual.
+Suponemos que **closestRecursive** ya funciona bien para **cualquier lista más corta** que la actual.
 
 **Paso inductivo (3 o más puntos)**
 
-Se divide en izquierda `L` y derecha `R`. Las dos son más cortas y la derecha tiene al menos 2 puntos. Por la hipótesis:
+Se divide en izquierda **L** y derecha **R**. Las dos son más cortas y la derecha tiene al menos 2 puntos. Por la hipótesis:
 
-- `leftDistance` es la verdadera distancia mínima de `L`.
-- `rightDistance` es la verdadera distancia mínima de `R`.
-- `delta` es la menor de las dos, y es un número real (no infinito) porque `R` tiene al menos un par.
+- **leftDistance** es la verdadera distancia mínima de **L**.
+- **rightDistance** es la verdadera distancia mínima de **R**.
+- **delta** es la menor de las dos, y es un número real porque **R** tiene al menos un par.
 
 Ahora, cualquier par de puntos de la lista cae en **uno de tres grupos**:
 
-1. Los dos están en `L`.
-2. Los dos están en `R`.
-3. Uno está en `L` y el otro en `R` (par **cruzado**).
+1. Los dos están en **L**.
+2. Los dos están en **R**.
+3. Uno está en **L** y el otro en **R** 
 
-Los grupos 1 y 2 ya están cubiertos por `delta`. Solo falta el grupo 3, y eso es lo que revisa la franja. Hay que probar dos cosas:
+Los grupos 1 y 2 ya están cubiertos por **delta**. Solo falta el grupo 3, y eso es lo que revisa la franja. Hay que probar dos cosas:
 
-**(a) El resultado nunca es más pequeño que la verdad.** Todos los valores que se manejan (`delta` y las distancias de la franja) salen de pares reales de puntos. Ninguno es inventado, así que el mínimo de todos no puede estar por debajo del mínimo real. ✔
-
+**(a) El resultado nunca es más pequeño que la verdad.** Todos los valores que se manejan **delta** y las distancias de la franja salen de pares reales de puntos.  
 **(b) El resultado nunca es más grande que la verdad.** Hay dos situaciones:
 
-- Si el mejor par de toda la lista **no es cruzado**, entonces la respuesta verdadera es `delta`, y nuestro resultado es `min(delta, algo)`, que es `≤ delta`. ✔
-- Si el mejor par **sí es cruzado**, y es mejor que `delta`, llamemos al par `a` (en `L`) y `b` (en `R`), con distancia `d < delta`. Sea `m` la x del primer punto de `R` (la calle del medio). Como todo está ordenado por x:
+- Si el mejor par de toda la lista **no es cruzado**, entonces la respuesta verdadera es **delta**, y nuestro resultado es **min(delta, algo)**, que es **≤ delta**. 
+- Si el mejor par **sí es cruzado**, y es mejor que **delta**, llamemos al par **a** (en **L**) y **b** (en **R**), con distancia **d < delta**. Sea **m** la x del primer punto de **R**. Como todo está ordenado por x:
 
   ```
   x(a)  ≤  m  ≤  x(b)
   ```
 
-  La distancia horizontal entre `a` y `b` no puede ser mayor que su distancia real:
+  La distancia horizontal entre **a** y **b** no puede ser mayor que su distancia real:
 
   ```
   x(b) - x(a)  ≤  d  <  delta
   ```
 
-  Como `m` está en medio de `x(a)` y `x(b)`, cada uno está **a menos de delta** de la calle. Es decir, **los dos entran a la franja**. Entonces `stripMinDistance` (que es correcta por la Pieza 6) ve ese par y devuelve algo `≤ d`. ✔
+Como **m** está en medio de **x(a)** y **x(b)**, cada uno está **a menos de delta** de la calle. Es decir, **los dos entran a la franja**. Entonces **stripMinDistance** ve ese par y devuelve algo **≤ d**. 
 
-Juntando (a) y (b), `closestRecursive` devuelve exactamente la distancia mínima. ∎
+Juntando (a) y (b), **closestRecursive** devuelve exactamente la distancia mínima. 
 
 **La recursión termina** porque cada llamada recibe una lista estrictamente más corta (Pieza 2), y las funciones auxiliares recorren listas finitas.
 
-### 9.8 Cierre: `closestPoints`
+### 9.8 Cierre: **closestPoints**
 
-Se ordena por x (Pieza 4: no se pierde ni se agrega ningún punto), se aplica `closestRecursive` (Pieza 7: da el mínimo exacto) y se redondea a 4 decimales. El redondeo cambia el número en menos de `0.00005`. ✔
+Se ordena por x (Pieza 4: no se pierde ni se agrega ningún punto), se aplica **closestRecursive** (Pieza 7: da el mínimo exacto) y se redondea a 4 decimales. El redondeo cambia el número en menos de **0.00005**. 
 
 ### 9.9 Resumen de la demostración
 
@@ -589,7 +581,7 @@ Sea **n** la cantidad de puntos. La complejidad responde a la pregunta: "si dupl
 En cada llamada se hace:
 
 - Partir en dos: n pasos.
-- Ordenar cada mitad: `T(n/2)` por mitad.
+- Ordenar cada mitad: **T(n/2)** por mitad.
 - Mezclar: n pasos.
 
 Eso se escribe como una **ecuación de recurrencia**:
@@ -600,7 +592,7 @@ T(n) = 2·T(n/2) + n          con T(1) = 1
 
 Leída en voz alta: "ordenar n elementos cuesta dos veces ordenar la mitad, más n pasos extra de partir y mezclar".
 
-**Cómo se resuelve, por niveles.** Cada nivel del árbol de llamadas cuesta en total unos n pasos (las listas se parten pero sumadas siempre dan n), y hay unos `log₂ n` niveles:
+**Cómo se resuelve, por niveles.** Cada nivel del árbol de llamadas cuesta en total unos n pasos (las listas se parten pero sumadas siempre dan n), y hay unos **log₂ n** niveles:
 
 ```
 Nivel 0:  1 lista de n         → n pasos
@@ -610,7 +602,7 @@ Nivel 2:  4 listas de n/4      → n pasos
 Último:   n listas de 1        → n pasos
 ```
 
-Total: `n × (log₂ n)`. Por el Teorema Maestro (a = 2, b = 2, f(n) = n) también da:
+Total: **n × (log₂ n)**. Por el Teorema Maestro (a = 2, b = 2, f(n) = n) también da:
 
 ```
 T(n) = Θ(n log n)
@@ -618,17 +610,17 @@ T(n) = Θ(n log n)
 
 ### 10.3 Recorrer la franja es rápido
 
-Esta parte tiene un truco, porque a primera vista parece que cada punto se compara con todos los demás de la franja (lo que sería lento). No es así, y el motivo es el **empaquetamiento**:
+Esta parte tiene un truco, porque a primera vista parece que cada punto se compara con todos los demás de la franja (lo que sería lento). No es así, y el motivo es el empaquetamiento:
 
 - Los puntos del lado izquierdo de la franja están a distancia **al menos delta** unos de otros (porque delta es la menor distancia dentro de cada mitad).
 - Lo mismo vale para los del lado derecho.
-- En un cuadradito de lado delta caben **como máximo 4 puntos** que estén separados por al menos delta (los cuatro rincones).
+- En un cuadradito de lado delta caben como máximo 4 puntos que estén separados por al menos delta (los cuatro rincones).
 
-Entonces, cuando comparamos un punto con los siguientes y nos paramos al pasarnos de la altura permitida, nos pasamos de **muy pocos** puntos. La zona de comparación es una caja de ancho `2·delta` y alto aproximado `2·delta`, que son 4 cuadraditos de lado delta, y cada cuadradito tiene 4 puntos como máximo. Total: **a lo sumo unos 16 puntos**.
+Entonces, cuando comparamos un punto con los siguientes y nos paramos al pasarnos de la altura permitida, nos pasamos de **muy pocos** puntos. La zona de comparación es una caja de ancho **2·delta** y alto aproximado **2·delta**, que son 4 cuadraditos de lado delta, y cada cuadradito tiene 4 puntos como máximo. Total: a lo sumo unos 16 puntos.
 
 Dicho fácil: **cada punto se compara con una cantidad pequeña y constante de otros**, no con todos. Por eso recorrer la franja cuesta algo proporcional a k.
 
-Un detalle técnico: `scan` empieza con `mejor = infinito`, no con `delta`. Se verifica que aun así la cantidad de comparaciones por punto sigue acotada: después de comparar un punto con el siguiente, `mejor` queda como máximo en `2·delta + (la diferencia de altura entre ambos)`, y eso deja la ventana dentro de una caja de alto `2·delta`. Además, si `delta` es 0 (puntos repetidos), el recorrido termina en cuanto se encuentra la pareja repetida.
+Un detalle técnico: scan empieza con mejor = infinito, no con **delta**. Se verifica que aun así la cantidad de comparaciones por punto sigue acotada: después de comparar un punto con el siguiente, mejor queda como máximo en **2·delta + (la diferencia de altura entre ambos)**, y eso deja la ventana dentro de una caja de alto **2·delta**. Además, si **delta** es 0 (puntos repetidos), el recorrido termina en cuanto se encuentra la pareja repetida.
 
 ### 10.4 El algoritmo completo (`closestRecursive`)
 
@@ -648,21 +640,21 @@ Como k puede llegar a ser n, esto queda:
 T(n) = 2·T(n/2) + (algo del orden de n log n)
 ```
 
-**Peor caso.** Si todos los puntos tienen **la misma x** (por ejemplo, todos en una línea vertical), la distancia de cada punto a la calle del medio es 0, así que **todos entran a la franja en todos los niveles**. Entonces el costo por nivel es de unos `n log n`, y se repite en cada uno de los `log n` niveles.
+**Peor caso.** Si todos los puntos tienen **la misma x** por ejemplo, todos en una línea vertical, la distancia de cada punto a la calle del medio es 0, así que **todos entran a la franja en todos los niveles**. Entonces el costo por nivel es de unos **n log n**, y se repite en cada uno de los **log n** niveles.
 
-Hagámoslo con números: con n = 1.024 puntos hay 10 niveles. Ordenar por y en el nivel 0 cuesta `1024 × 10`; en el nivel 1 son dos franjas de 512 que cuestan `2 × 512 × 9`; en el nivel 2, `4 × 256 × 8`; y así hasta el último:
+Hagámoslo con números: con n = 1.024 puntos hay 10 niveles. Ordenar por y en el nivel 0 cuesta **1024 × 10**; en el nivel 1 son dos franjas de 512 que cuestan **2 × 512 × 9**; en el nivel 2, **4 × 256 × 8**; y así hasta el último:
 
 ```
 Total = 1024 × (10 + 9 + 8 + ... + 1) = 1024 × 55 = 56.320 pasos
 ```
 
-Esa suma `10 + 9 + ... + 1` es `log n × (log n + 1) / 2`, y en general:
+Esa suma **10 + 9 + ... + 1** es **log n × (log n + 1) / 2**, y en general:
 
 ```
 T(n) = n × (log n)(log n + 1) / 2  =  Θ(n log² n)
 ```
 
-Compárese con 1024 × 10 = 10.240 si fuera solo `n log n`. Por eso el peor caso es `n log² n`.
+Compárese con 1024 × 10 = 10.240 si fuera solo **n log n**. Por eso el peor caso es **n log² n**.
 
 **Mejor caso.** Si la franja es chiquita en todos los niveles, el costo por nivel es proporcional a n, y:
 
@@ -672,7 +664,7 @@ T(n) = 2·T(n/2) + n   →   Θ(n log n)
 
 ### 10.5 Total de `closestPoints`
 
-Se ordena por x (n log n) y luego se llama a `closestRecursive`:
+Se ordena por x (n log n) y luego se llama a **closestRecursive**:
 
 | Caso | Complejidad |
 |---|---|
@@ -680,11 +672,11 @@ Se ordena por x (n log n) y luego se llama a `closestRecursive`:
 | Mejor caso | Θ(n log n) |
 | En cualquier caso | Entre `n log n` y `n log² n` |
 
-Y comparado con la fuerza bruta (n²), seguimos ganando por mucho. Con un millón de puntos: `n²` son 10¹² pasos y `n log² n` son unos 4×10⁸.
+Y comparado con la fuerza bruta (n²), seguimos ganando por mucho. Con un millón de puntos: **n²** son 10¹² pasos y **n log² n** son unos 4×10⁸.
 
 ### 10.6 ¿O(n log n)?
 
-El algoritmo logra `n log n` exacto porque **no vuelve a ordenar la franja por y en cada llamada**. En vez de eso, cada `closestRecursive` devuelve, además de la distancia, **la lista de sus puntos ya ordenada por y**. Entonces para obtener la lista de una llamada basta mezclar (con `mergeByY`) las dos listas que devolvieron las mitades. Mezclar cuesta n, no n log n.
+El algoritmo logra **n log n** exacto porque no vuelve a ordenar la franja por y en cada llamada. En vez de eso, cada **closestRecursive** devuelve, además de la distancia, la lista de sus puntos ya ordenada por y. Entonces para obtener la lista de una llamada basta mezclar **mergeByY** las dos listas que devolvieron las mitades. Mezclar cuesta n, no n log n.
 
 El costo por llamada pasa a ser:
 
@@ -709,8 +701,8 @@ Sumando el ordenamiento inicial por x, el total es `Θ(n log n)`.
 
 ### 10.7 Memoria
 
-- **Pila de llamadas:** las funciones recursivas "normales" (`sortByX`, `sortByY`, `closestRecursive`) llegan hasta unos `log n` niveles de profundidad. Las funciones con `@tailrec` se ejecutan como ciclos y no gastan pila.
-- **Listas nuevas:** como las listas no se modifican, cada operación crea listas nuevas. En una llamada se crean las dos mitades, la franja y las listas de mezcla, todo del orden de n. Como las dos llamadas recursivas se hacen una después de la otra, la memoria de la primera ya se puede liberar cuando empieza la segunda. La suma es `n + n/2 + n/4 + ... ≈ 2n`.
+- **Pila de llamadas:** las funciones recursivas "normales" **sortByX**, **sortByY**, **closestRecursive** llegan hasta unos **log n** niveles de profundidad. Las funciones con **@tailrec** se ejecutan como ciclos y no gastan pila.
+- **Listas nuevas:** como las listas no se modifican, cada operación crea listas nuevas. En una llamada se crean las dos mitades, la franja y las listas de mezcla, todo del orden de n. Como las dos llamadas recursivas se hacen una después de la otra, la memoria de la primera ya se puede liberar cuando empieza la segunda. La suma es **n + n/2 + n/4 + ... ≈ 2n**.
 
 | Recurso | Cuánto |
 |---|---|
@@ -722,23 +714,18 @@ Sumando el ordenamiento inicial por x, el total es `Θ(n log n)`.
 ---
 
 ## 11. ¿Cómo lo probamos? (diseño de pruebas)
-
-Las pruebas están en `ClosestPointsSuite.scala` con MUnit. Se corren con:
-
-```
-sbt test
-```
+Las pruebas están en **ClosestPointsSuite.scala** con MUnit. 
 
 ### 11.1 Cómo pensamos las pruebas
 
 Quisimos cubrir cuatro tipos de situaciones:
 
 1. **Casos típicos y raros:** pocos puntos, puntos repetidos, coordenadas negativas, todos en una línea.
-2. **Casos límite:** lista vacía, un solo punto, dos puntos, números enormes (los que podrían "desbordar" un `Int`).
+2. **Casos límite:** lista vacía, un solo punto, dos puntos, números enormes (los que podrían "desbordar" un Int).
 3. **El caso más importante del algoritmo:** que la mejor pareja quede una a cada lado de la línea del medio, de modo que **solo la franja** pueda encontrarla.
-4. **Una "respuesta de control":** comparar con el algoritmo lento (fuerza bruta) en muchos casos aleatorios. Si los dos dan lo mismo, buena señal. Se usa una semilla fija (`42`) para que siempre sea reproducible.
+4. **Una "respuesta de control":** comparar con el algoritmo lento (fuerza bruta) en muchos casos aleatorios. Si los dos dan lo mismo, buena señal. Se usa una semilla fija (42) para que siempre sea reproducible.
 
-Para comparar números con decimales se usa una tolerancia de `0.0001`, que va con los 4 decimales que pide el enunciado.
+Para comparar números con decimales se usa una tolerancia de 0.0001, que va con los 4 decimales que pide el enunciado.
 
 ### 11.2 Pruebas de las funciones pequeñas
 
@@ -766,7 +753,7 @@ Para comparar números con decimales se usa una tolerancia de `0.0001`, que va c
 | 15 | Menos de dos puntos | Lista vacía y un punto | Infinito | Casos límite sin pares |
 | 16 | Contra fuerza bruta | 200 listas aleatorias, de 2 a 41 puntos, con coordenadas entre -100 y 99 | Igual al algoritmo lento (con tolerancia) | Verificar la corrección en general |
 
-**Sobre la prueba 12:** originalmente `distance` calculaba `dx * dx + dy * dy` con enteros, y cuando la diferencia pasaba de unos 46.340 el cuadrado se salía del rango de un `Int` y daba resultados sin sentido. Se arregló pasando a `Double` **antes** de multiplicar, y esta prueba existe para que no vuelva a pasar.
+**Sobre la prueba 12:** originalmente **distance** calculaba **dx * dx + dy * dy** con enteros, y cuando la diferencia pasaba de unos 46.340 el cuadrado se salía del rango de un Int y daba resultados sin sentido. Se arregló pasando a Double antes de multiplicar, y esta prueba existe para que no vuelva a pasar.
 
 ### 11.4 Qué prueba cubre qué función
 
@@ -783,7 +770,7 @@ Para comparar números con decimales se usa una tolerancia de `0.0001`, que va c
 
 ### 11.5 Cómo se conectan las pruebas con la demostración
 
-- Las pruebas 4 y 5 comprueban en ejemplos concretos lo que la demostración dice de `merge` y de `sortByX/Y` (secciones 9.3 y 9.4).
+- Las pruebas 4 y 5 comprueban en ejemplos concretos lo que la demostración dice de **merge** y de **sortByX/Y** (secciones 9.3 y 9.4).
 - La prueba 13 es el ejemplo vivo del paso inductivo: el mejor par cruza la línea y solo la franja lo encuentra (sección 9.7).
 - Las pruebas 7 y 15 son los casos base de la inducción.
 - La prueba 14 es el peor caso de la complejidad (sección 10.4).
