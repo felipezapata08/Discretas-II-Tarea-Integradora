@@ -38,7 +38,6 @@ Dada la lista `[4, 4, 1, 9, 4, 1, 4, 4]` y tomando como pivote el primer `4`:
 
 Demostramos que `quickSort(list)` ordena correctamente cualquier lista de enteros $L$.
 
-### Lema Auxiliar: Correctitud de `partition3Way`
 `partition3Way` procesa la lista elemento por elemento usando recursión de cola (`@tailrec`). Garantiza que al finalizar retorna una tupla $(L_{less}, L_{equal}, L_{greater})$ con:
 - $L_{less} = \{x \in L \mid x < pivot\}$
 - $L_{equal} = \{pivot\} \cup \{x \in L \mid x = pivot\}$
