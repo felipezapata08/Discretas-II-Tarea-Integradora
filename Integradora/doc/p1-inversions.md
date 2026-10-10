@@ -2,52 +2,159 @@
 
 ### Qué hace el algoritmo
 
-Una inversión es cuando, en una lista de números, uno más grande aparece antes que uno más pequeño. Sirve para medir qué tan desordenada está la lista: si está ordenada de menor a mayor no tiene ninguna, y si está al revés, todas las parejas de números son inversiones.
+Una inversión es una pareja de posiciones (i, j) con i < j donde el número de la posición i es más grande que el de la posición j. Sirve para saber qué tan desordenada está una lista: si está ordenada no tiene ninguna, y si está al revés todas las parejas son inversiones. En la lista 2, 3, 9, 2, 9 hay 2: el 3 y el 9 del medio están antes del segundo 2 y son más grandes que él.
 
-Por ejemplo, en la lista 2, 3, 9, 2, 9 hay 2 inversiones: el 3 está antes del segundo 2 y es más grande, y el primer 9 también está antes de ese mismo 2 y es más grande.
+Comparar cada número con todos los que le siguen funciona, pero se demora mucho en listas largas. Por eso uso Merge Sort con un cambio: parto la lista por la mitad, resuelvo cada mitad por separado y después las junto ya ordenadas. Mientras las junto voy contando las inversiones que hay entre una mitad y la otra.
 
-La forma directa de contarlas sería comparar cada número con todos los que vienen después, pero eso se demora muchísimo cuando la lista es larga. Por eso lo hago de otra forma: parto la lista por la mitad, resuelvo cada mitad por separado, y después junto las dos mitades. Mientras las junto, cuento las inversiones que hay entre una mitad y la otra.
+Para entender cómo se cuenta al juntar, me imagino dos montones de cartas, cada uno ordenado de menor a mayor. Voy pasando cartas a un montón nuevo, siempre mirando la de arriba de cada montón. Si la de la izquierda es menor o igual, la paso y no pasa nada más. Si la de la derecha es menor, la paso, y como el montón izquierdo está ordenado, esa carta es menor que todas las que le quedan a la izquierda. Cada una de ellas forma una inversión, así que sumo tantas como cartas le queden al montón izquierdo.
 
-Para entender cómo se cuentan al juntar, me imagino dos montones de cartas, cada uno ya ordenado de menor a mayor, que voy pasando a un montón nuevo. Siempre miro la carta de arriba de cada montón.
+Con 3, 5 a la izquierda y 1, 4 a la derecha pasa esto: gana el 1 y a la izquierda le quedan 2 cartas, entonces sumo 2. Paso el 3 y no sumo nada. Gana el 4 y a la izquierda le queda 1 carta, entonces sumo 1. Por último paso el 5. Son 3 inversiones, (3,1), (5,1) y (5,4), y la lista queda 1, 3, 4, 5. Los números iguales no cuentan como inversión, porque la inversión pide que el de la izquierda sea estrictamente más grande.
 
-Si la del montón izquierdo es menor o igual, la paso al montón nuevo y no pasa nada más.
+En el código esto está en tres funciones:
 
-Si la del montón derecho es menor, la paso al montón nuevo. Como el montón izquierdo está ordenado, esa carta es menor que todas las que todavía le quedan al izquierdo, y cada una de ellas forma una inversión con ella. Entonces sumo tantas inversiones como cartas le queden al montón izquierdo.
+- merge(left, right): recibe dos listas ya ordenadas y devuelve la lista mezclada y ordenada, junto con la cantidad de parejas (b, c) con b en left, c en right y b > c.
+- mergeSortCount(seq): parte la lista por la mitad, se llama a sí misma con cada mitad, las junta con merge y suma las inversiones.
+- countInversions(seq): llama a mergeSortCount y se queda solo con el número de inversiones.
 
-Con el montón izquierdo 3, 5 y el derecho 1, 4:
+### Demostración de que merge es correcta
 
-- Comparo 3 con 1. Gana el 1 y al izquierdo le quedan 2 cartas, entonces sumo 2.
-- Comparo 3 con 4. Paso el 3 y no sumo nada.
-- Comparo 5 con 4. Gana el 4 y al izquierdo le queda 1 carta, entonces sumo 1.
-- Ya no quedan cartas a la derecha, así que paso el 5 que faltaba.
+merge llama a una función auxiliar loop(left, right, leftSize, acc, count). La lista acc es la mezcla que voy armando, guardada al revés, count son las inversiones que llevo contadas y leftSize es cuántos elementos le quedan a la lista izquierda. Demuestro que loop es correcta y de ahí sale que merge lo es.
 
-En total son 3 inversiones: (3,1), (5,1) y (5,4), y la lista queda ordenada: 1, 3, 4, 5.
+Notación que voy a usar:
 
-Si dos números son iguales no cuentan como inversión, porque una inversión pide que el de la izquierda sea más grande, no igual.
+- Una lista está ordenada si cada elemento es menor o igual que los que van después. Si a :: L2 está ordenada, L2 también lo está.
+- |L| es la cantidad de elementos de L.
+- Para dos listas ordenadas L y R, M(L, R) es la lista ordenada que tiene todos los elementos de L y de R.
+- I(L, R) es la cantidad de parejas (b, c) con b en L, c en R y b > c.
 
-### Qué hace el algoritmo, explicado con los términos del curso
+Escribo loop(L, R, |L|, acc, count) porque merge siempre lo llama con leftSize igual al tamaño de la lista izquierda, y en cada llamada recursiva leftSize sigue siendo el tamaño de la lista izquierda que queda.
 
-Dada una secuencia a_0, a_1, ..., a_(n-1), una inversión es un par de posiciones (i, j) con 0 <= i < j < n tal que a_i > a_j. El problema pide devolver cuántas inversiones tiene la secuencia.
+Proposición: para toda lista ordenada L, para toda lista ordenada R, y para todo acc y count,
 
-Lo resuelvo con divide y vencerás, modificando Merge Sort. La secuencia es una lista inmutable de enteros (una lista que no se modifica: cada operación crea una nueva) y la proceso con pattern matching, que es revisar si la lista está vacía (Nil) o si tiene cabeza y cola (head :: tail).
+loop(L, R, |L|, acc, count) = (acc.reverse ::: M(L, R), count + I(L, R))
 
-La función merge(left, right) recibe dos listas ya ordenadas y devuelve una pareja: la lista mezclada y ordenada, y la cantidad de pares (b, c) con b en left, c en right y b > c. Por dentro usa una función auxiliar llamada loop, que es recursiva de cola (@tailrec), o sea que la llamada recursiva es lo último que hace y por eso se ejecuta como un ciclo y no se llena la memoria. Esa función lleva tres datos anotados:
+Esto dice que loop devuelve lo que ya tenía armado en acc seguido de la mezcla ordenada de L y R, y que a count le suma las inversiones entre L y R.
 
-- acc: la lista mezclada que voy armando, al revés, porque agregar al inicio de una lista es lo más rápido. Al final le doy la vuelta con reverse.
-- count: las inversiones que llevo contadas.
-- leftSize: cuántos elementos le quedan a la lista izquierda. Lo llevo anotado para no tener que contarlos en cada paso, porque eso haría el algoritmo mucho más lento.
+Hago la demostración por inducción estructural sobre L. Una lista es Nil o es a :: L2, con a un elemento y L2 otra lista.
 
-Los casos de loop son estos:
+Paso 1. Identificar P(L)
 
-- Si la izquierda está vacía, agrego lo que quede de la derecha. Si la derecha está vacía, agrego lo que quede de la izquierda.
-- Si las dos tienen elementos y la cabeza de la izquierda es menor o igual que la de la derecha, paso la de la izquierda y leftSize baja en uno. No sumo inversiones.
-- Si la cabeza de la derecha es menor, la paso a acc y sumo leftSize a count, porque es menor que todos los que le quedan a la izquierda.
+P(L): para toda lista ordenada R, y para todo acc y count,
+loop(L, R, |L|, acc, count) = (acc.reverse ::: M(L, R), count + I(L, R)).
 
-La función mergeSortCount(seq) devuelve la lista ordenada y el total de inversiones:
+Paso 2. Caso base (L = Nil)
 
-- Caso base: si la lista está vacía o tiene un solo elemento, ya está ordenada y tiene 0 inversiones.
-- Caso recursivo: parto la lista por la mitad con splitAt, me llamo a mí misma con cada mitad, junto los resultados con merge y sumo: inversiones de la izquierda, más inversiones de la derecha, más las que contó merge.
+Sean R una lista ordenada, acc y count cualesquiera.
+loop(Nil, R, 0, acc, count) = (acc.reverse ::: R, count), por la definición de loop cuando la lista izquierda está vacía.
+M(Nil, R) = R, porque R ya está ordenada, e I(Nil, R) = 0, porque no hay elementos en la izquierda.
+Entonces (acc.reverse ::: M(Nil, R), count + I(Nil, R)) = (acc.reverse ::: R, count + 0).
+Los dos lados son iguales, entonces P(Nil) se cumple.
 
-Esta suma sirve porque toda inversión (i, j) cae en uno de tres casos: las dos posiciones están en la mitad izquierda, las dos están en la derecha, o i está en la izquierda y j en la derecha. Los dos primeros casos los cuentan las llamadas recursivas, y el tercero lo cuenta merge. Además, ordenar las mitades antes de juntarlas no cambia el conteo, porque las inversiones entre una mitad y la otra solo dependen de qué elementos hay en cada mitad, no del orden en que estén.
+Paso 3. Suponer el paso inductivo
 
-Por último, countInversions(seq) llama a mergeSortCount y se queda solo con el segundo valor de la pareja, que es el número de inversiones. Uso Long y no Int porque con muchos elementos la cuenta puede pasarse del límite de Int: con un millón de números en orden inverso son casi 500 mil millones de inversiones.
+Supongamos que la Proposición se cumple para alguna lista ordenada L2, es decir:
+
+P(L2): para toda lista ordenada R, y para todo acc y count,
+loop(L2, R, |L2|, acc, count) = (acc.reverse ::: M(L2, R), count + I(L2, R)).
+
+Paso 4. Probar P(a :: L2)
+
+Sea a cualquier elemento tal que L = a :: L2 está ordenada. Por eso L2 también está ordenada y a es menor o igual que todos los elementos de L2. Dejo L fija y tengo que probar la igualdad para toda lista ordenada R, con cualquier acc y count. Para eso hago una segunda inducción estructural, ahora sobre R.
+
+Q(R): para todo acc y count,
+loop(L, R, |L|, acc, count) = (acc.reverse ::: M(L, R), count + I(L, R)).
+
+Caso base de Q (R = Nil)
+loop(L, Nil, |L|, acc, count) = (acc.reverse ::: L, count), por la definición de loop cuando la derecha está vacía.
+M(L, Nil) = L, porque L está ordenada, e I(L, Nil) = 0, porque no hay elementos en la derecha.
+Entonces (acc.reverse ::: M(L, R), count + I(L, R)) = (acc.reverse ::: L, count + 0).
+Los dos lados son iguales, entonces Q(Nil) se cumple.
+
+Suponer el paso inductivo de Q
+
+Supongamos que se cumple Q(R2) para alguna lista ordenada R2, es decir, para todo acc y count,
+loop(L, R2, |L|, acc, count) = (acc.reverse ::: M(L, R2), count + I(L, R2)).
+
+Probar Q(c :: R2)
+
+Sea c un elemento tal que R = c :: R2 está ordenada. Por eso R2 también está ordenada y c es menor o igual que todos los elementos de R2. Como L y R tienen elementos, el código compara a con c y hay dos casos.
+
+Caso 1: a <= c.
+Por la definición de loop, loop(L, R, |L|, acc, count) = loop(L2, R, |L| - 1, a :: acc, count). Como |L2| = |L| - 1, el tamaño que le paso es |L2|, así que puedo usar la hipótesis inductiva de P (la del Paso 3), con R completa:
+
+loop(L2, R, |L2|, a :: acc, count) = ((a :: acc).reverse ::: M(L2, R), count + I(L2, R))
+
+Como (a :: acc).reverse = acc.reverse ::: List(a), el resultado queda
+(acc.reverse ::: (a :: M(L2, R)), count + I(L2, R)).
+
+Me falta ver dos cosas.
+
+Primero, que a :: M(L2, R) = M(L, R). Como L está ordenada, a es menor o igual que todos los de L2. Y como a <= c y R está ordenada, a también es menor o igual que todos los de R. Entonces a es el menor de todos, y va de primero en la mezcla ordenada de L y R.
+
+Segundo, que I(L, R) = I(L2, R). Una inversión con a de lado izquierdo necesitaría un x en R con a > x, pero a <= c <= x para todo x de R, así que no hay ninguna. Las demás inversiones son justo las de I(L2, R).
+
+Con eso el resultado es (acc.reverse ::: M(L, R), count + I(L, R)).
+
+Caso 2: a > c.
+Por la definición de loop, loop(L, R, |L|, acc, count) = loop(L, R2, |L|, c :: acc, count + |L|). Aquí puedo usar la hipótesis inductiva de Q:
+
+loop(L, R2, |L|, c :: acc, count + |L|) = ((c :: acc).reverse ::: M(L, R2), count + |L| + I(L, R2))
+
+Como (c :: acc).reverse = acc.reverse ::: List(c), el resultado queda
+(acc.reverse ::: (c :: M(L, R2)), count + |L| + I(L, R2)).
+
+Me falta ver dos cosas.
+
+Primero, que c :: M(L, R2) = M(L, R). Como c < a y a es menor o igual que todos los de L, entonces c es menor que todos los de L. Además c es menor o igual que todos los de R2. Entonces c es el menor de todos y va de primero en la mezcla.
+
+Segundo, que I(L, R) = |L| + I(L, R2). Las parejas que tienen a c de lado derecho son (b, c) con b en L. Cada b de L cumple b >= a > c, así que las |L| parejas son inversiones. Las demás son justo las de I(L, R2).
+
+Con eso el resultado es (acc.reverse ::: M(L, R), count + I(L, R)).
+
+En los dos casos se cumple Q(c :: R2). Como Q(Nil) se cumple y Q(R2) implica Q(c :: R2), Q(R) se cumple para toda lista ordenada R. Eso es justo P(a :: L2).
+
+Conclusión
+
+Como P(Nil) se cumple y P(L2) implica P(a :: L2), por inducción estructural P(L) se cumple para toda lista ordenada L. Queda demostrada la Proposición.
+
+merge(left, right) llama a loop(left, right, left.length, Nil, 0). Por la Proposición,
+
+merge(left, right) = (Nil.reverse ::: M(left, right), 0 + I(left, right)) = (M(left, right), I(left, right))
+
+O sea que merge devuelve la lista mezclada y ordenada junto con la cantidad de inversiones entre las dos listas. Por lo tanto, merge es correcta.
+
+### Demostración de que mergeSortCount es correcta
+
+Aquí uso que merge ya es correcta, que quedó demostrado arriba.
+
+Notación que voy a usar:
+
+- ordenada(S) es la lista ordenada que tiene los mismos elementos de S.
+- inv(S) es la cantidad de inversiones de S, o sea las parejas (i, j) con i < j y S(i) > S(j).
+
+Proposición: para toda lista S,
+
+mergeSortCount(S) = (ordenada(S), inv(S))
+
+Aquí no me sirve la inducción estructural de una sola cola (de a :: t a t), porque mergeSortCount no se llama con la cola de la lista sino con sus dos mitades, que tienen un tamaño más o menos n/2 y no n - 1. Por eso uso inducción fuerte sobre el tamaño de la lista: supongo que se cumple para todas las listas más cortas, y no solo para la que tiene un elemento menos.
+
+Paso 1. Identificar Q(n)
+
+Q(n): para toda lista S con |S| = n, mergeSortCount(S) = (ordenada(S), inv(S)).
+
+Paso 2. Casos base (n = 0 y n = 1)
+
+Si |S| = 0, S es Nil y el código devuelve (Nil, 0), por la definición de mergeSortCount. Se cumple porque ordenada(Nil) = Nil e inv(Nil) = 0.
+Si |S| = 1, el código devuelve (S, 0). Se cumple porque una lista de un solo elemento ya está ordenada y no tiene parejas (i, j) con i < j, así que no tiene inversiones.
+
+Paso 3. Suponer el paso inductivo
+
+Supongamos que la Proposición se cumple para algún n ∈ N con n >= 1 y para todos los tamaños k con k <= n, es decir:
+
+Q(k): para toda lista S con |S| = k, mergeSortCount(S) = (ordenada(S), inv(S)), para todo k <= n.
+
+Paso 4. Probar Q(n+1)
+
+Sea S una lista con |S| = n + 1. Como n >= 1, S tiene al menos 2 elementos, así que el código no entra en los casos base y hace esto: parte S con splitAt(|S| / 2) en dos listas S1 y S2 tales que S = S1 ::: S2. Como |S| >= 2, las dos mitades tienen al menos un elemento, o sea |S1| >= 1 y |S2| >= 1. Entonces las dos son más cortas que S, y sus tamaños son menores o iguales que n.
+
+Por la hipótesis
